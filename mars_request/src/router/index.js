@@ -1,23 +1,45 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      redirect: '/Staff/login',
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/Staff/login',
+      name: 'login',
+      component: () => import('../views/auth/login.vue'),
+    },
+    {
+      path: '/Staff/register',
+      name: 'register',
+      component: () => import('../views/auth/register.vue'),
+    },
+    {
+      path: '/staff/dashboard',
+      name: 'staff-dashboard',
+      component: () => import('../views/Staff/Staff_dashboard.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/requestor/home',
+      name: 'requestor-home',
+      component: () => import('../views/requestor/requestor_home.vue'),
     },
   ],
 })
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('token');
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/Staff/login');
+  } else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
+    next('/staff/dashboard');
+  } else {
+    next();
+  }
+});
 
 export default router
