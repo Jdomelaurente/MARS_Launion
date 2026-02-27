@@ -5,8 +5,10 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/Staff/login',
+      name: 'requestor-home',
+      component: () => import('../views/requestor/requestor_home.vue'),
     },
+    // ── Staff routes ──────────────────────────────────────
     {
       path: '/Staff/login',
       name: 'login',
@@ -18,28 +20,57 @@ const router = createRouter({
       component: () => import('../views/auth/register.vue'),
     },
     {
-      path: '/staff/dashboard',
+      path: '/Staff/dashboard/:tab?',
       name: 'staff-dashboard',
-      component: () => import('../views/Staff/Staff_dashboard.vue'),
-      meta: { requiresAuth: true }
+      component: () => import('../views/Staff/StaffDashboard.vue'),
+      meta: { requiresAuth: true },
+    },
+    // ── Admin routes ──────────────────────────────────────
+    {
+      path: '/admin/login',
+      name: 'admin-login',
+      component: () => import('../views/admin/AdminLogin.vue'),
     },
     {
-      path: '/requestor/home',
-      name: 'requestor-home',
-      component: () => import('../views/requestor/requestor_home.vue'),
+      path: '/admin/dashboard/:tab?',
+      name: 'admin-dashboard',
+      component: () => import('../views/admin/AdminDashboard.vue'),
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
+    // Catch-all
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/Staff/login',
     },
   ],
 })
 
 router.beforeEach((to, from, next) => {
-  const isAuthenticated = !!localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+  const isAuthenticated = !!token;
+  const isAdmin = localStorage.getItem('is_admin') === 'true';
+
+  // Redirect unauthenticated users away from protected pages
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/Staff/login');
-  } else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
-    next('/staff/dashboard');
-  } else {
-    next();
+    return next(to.meta.requiresAdmin ? '/admin/login' : '/Staff/login');
   }
+
+  // Redirect non-admins away from admin dashboard
+  if (to.meta.requiresAdmin && !isAdmin) {
+    return next('/admin/login');
+  }
+
+  // Redirect already-authenticated admin away from admin login
+  if (to.name === 'admin-login' && isAuthenticated && isAdmin) {
+    return next('/admin/dashboard');
+  }
+
+  // Redirect already-authenticated staff away from staff login/register
+  if ((to.name === 'login' || to.name === 'register') && isAuthenticated && !isAdmin) {
+    return next('/Staff/dashboard');
+  }
+
+  next();
 });
 
 export default router

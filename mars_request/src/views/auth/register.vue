@@ -150,7 +150,7 @@ const handleRegister = async () => {
     await authService.register(form);
     success.value = true;
     setTimeout(() => {
-      router.push('/login');
+      router.push('/Staff/login');
     }, 2000);
   } catch (err) {
     if (err.response?.data) {

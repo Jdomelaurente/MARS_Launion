@@ -1,6 +1,18 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Staff, FileRequest
+from .models import Staff, FileRequest, Strand, DocumentType, PickupSlot, AuditLog, ProcessedDocument
+
+@admin.register(ProcessedDocument)
+class ProcessedDocumentAdmin(admin.ModelAdmin):
+    list_display = ['document_type', 'request', 'uploaded_by', 'uploaded_at']
+    search_fields = ['document_type', 'request__first_name', 'request__last_name']
+    list_filter = ['document_type', 'uploaded_at']
+
+
+@admin.register(Strand)
+class StrandAdmin(admin.ModelAdmin):
+    list_display = ['name', 'description']
+    search_fields = ['name']
 
 class StaffAdmin(UserAdmin):
     model = Staff
