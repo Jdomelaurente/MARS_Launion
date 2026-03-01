@@ -24,6 +24,7 @@ class FileRequest(models.Model):
     strand = models.CharField(max_length=100)
     birthdate = models.DateField()
     lrn_number = models.CharField(max_length=20, blank=True, default='')
+    request_code = models.CharField(max_length=20, unique=True, blank=True, null=True)
     email = models.EmailField()
     phone_number = models.CharField(max_length=20)
     permanent_address = models.TextField()

@@ -40,6 +40,9 @@ export const requestService = {
     submitRequest(data) {
         return apiClient.post('requests/', data);
     },
+    lookupRequest(code) {
+        return apiClient.get(`requests/lookup/${code}/`);
+    },
 };
 
 export default apiClient;

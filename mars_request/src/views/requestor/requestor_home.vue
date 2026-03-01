@@ -14,9 +14,9 @@
         <a href="#" class="text-slate-800 font-bold hover:text-cyan-500 transition-colors">Navigation</a>
         <a href="#" class="text-slate-800 font-bold hover:text-cyan-500 transition-colors">Navigation</a>
         <a href="#" class="text-slate-800 font-bold hover:text-cyan-500 transition-colors">Navigation</a>
-        <router-link to="/Staff/login" class="px-4 md:px-6 py-2 rounded font-bold text-white bg-[#154252] hover:bg-[#0d2a35] transition-colors whitespace-nowrap">
+        <button @click="openCheckModal" class="px-4 md:px-6 py-2 rounded font-bold text-white bg-[#154252] hover:bg-[#0d2a35] transition-colors whitespace-nowrap">
           Check Your Request
-        </router-link>
+        </button>
       </div>
     </nav>
 
@@ -100,6 +100,57 @@
         </div>
       </div>
     </div>
+
+    <!-- ===================== CHECK REQUEST MODAL ===================== -->
+    <Teleport to="body">
+      <div v-if="showCheckModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div class="bg-white w-full max-w-lg rounded-xl shadow-2xl border border-slate-300 overflow-hidden">
+          <!-- Header -->
+          <div class="px-8 pt-8 pb-4 flex items-start justify-between">
+            <div>
+              <h2 class="text-2xl font-black text-slate-900">Review Request Document</h2>
+              <p class="text-slate-500 text-sm mt-1">Enter the given Request Key of the Graduates.</p>
+            </div>
+            <div class="flex gap-2 flex-shrink-0">
+              <div class="w-9 h-9 rounded-full bg-[#99dbce]"></div>
+              <div class="w-9 h-9 rounded-full bg-[#99dbce]"></div>
+            </div>
+          </div>
+          <!-- Input Area -->
+          <div class="px-8 pb-4">
+            <input
+              v-model="checkCode"
+              @keyup.enter="handleCheckRequest"
+              type="text"
+              placeholder=""
+              class="w-full border border-slate-400 rounded-sm px-4 text-4xl font-mono font-black tracking-widest text-[#154252] focus:outline-none focus:border-[#154252] transition-all uppercase text-center"
+              style="height: 130px; display: flex; align-items: center;"
+            />
+            <div v-if="checkError" class="mt-2 text-sm text-red-500 font-medium">
+              {{ checkError }}
+            </div>
+            <p class="text-slate-700 text-sm mt-3 leading-relaxed">
+              <strong>Note:</strong> Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua..
+            </p>
+          </div>
+          <!-- Footer Buttons -->
+          <div class="px-8 pb-8 flex items-center justify-between gap-4 mt-2">
+            <button
+              @click="closeCheckModal"
+              class="px-10 py-2.5 border-2 border-slate-800 text-slate-800 font-bold rounded hover:bg-slate-50 transition-colors text-sm"
+            >Close</button>
+            <button
+              @click="handleCheckRequest"
+              :disabled="checkLoading"
+              class="px-10 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-black rounded shadow transition-colors disabled:opacity-60 text-sm"
+            >
+              <span v-if="checkLoading">Searching...</span>
+              <span v-else>Review</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- ===================== REQUEST MODAL ===================== -->
     <Teleport to="body">
@@ -265,10 +316,16 @@
             </div>
           </div>
           <h2 class="text-2xl font-black text-green-600 mb-1">Request Sent!</h2>
-          <p class="text-sm text-slate-400 mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+          <p class="text-sm text-slate-400 mb-4">Your file request has been successfully submitted.</p>
+          
+          <div class="mb-6 bg-slate-50 border-2 border-dashed border-[#154252] rounded-lg p-4">
+            <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mb-1">Your Request Code</p>
+            <p class="text-2xl font-black text-[#154252] tracking-wider font-mono">{{ requestCode }}</p>
+          </div>
+
           <div class="text-left mb-6">
             <p class="text-[#e07b2a] font-bold mb-1">Reminder:</p>
-            <p class="text-slate-800 text-sm leading-relaxed text-center">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
+            <p class="text-slate-800 text-sm leading-relaxed text-center">Please save your request code. A notification has also been sent to your email address.</p>
           </div>
           <button @click="closeSuccess" class="w-full py-3 bg-[#154252] hover:bg-[#0d2a35] text-white font-bold rounded-lg transition-colors">Close</button>
         </div>
@@ -279,10 +336,47 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
+import { useRouter } from 'vue-router';
 import bgImg from '@/assets/launion.png';
 import logoImg from '@/assets/logo-launion.png';
 import sittingPersonImg from '@/assets/sitting_person.png';
 import { requestService } from '@/services/api';
+
+const router = useRouter();
+
+// Check Request Modal State
+const showCheckModal = ref(false);
+const checkCode = ref('');
+const checkError = ref('');
+const checkLoading = ref(false);
+
+function openCheckModal() {
+  showCheckModal.value = true;
+  checkCode.value = '';
+  checkError.value = '';
+}
+
+function closeCheckModal() {
+  showCheckModal.value = false;
+}
+
+async function handleCheckRequest() {
+  if (!checkCode.value.trim()) {
+    checkError.value = 'Please enter your request code.';
+    return;
+  }
+  checkLoading.value = true;
+  checkError.value = '';
+  try {
+    await requestService.lookupRequest(checkCode.value.trim());
+    closeCheckModal();
+    router.push({ name: 'request-details', params: { code: checkCode.value.trim().toUpperCase() } });
+  } catch (err) {
+    checkError.value = err.response?.data?.error || 'Invalid code. Please try again.';
+  } finally {
+    checkLoading.value = false;
+  }
+}
 
 // Modal State
 const showModal = ref(false);
@@ -292,6 +386,7 @@ const submitError = ref('');
 const fileError = ref('');
 const fileSelectValue = ref('');
 const selectedFiles = ref([]);
+const requestCode = ref('');
 
 // Form Data
 const form = reactive({
@@ -359,18 +454,24 @@ async function handleSubmit() {
 
   submitting.value = true;
   try {
-    await requestService.submitRequest({
+    const response = await requestService.submitRequest({
       ...form,
       requested_files: selectedFiles.value,
     });
-    showModal.value = false;
-    showSuccess.value = true;
-    resetForm();
+    requestCode.value = response.data?.request_code;
+    if (requestCode.value) {
+      router.push({ name: 'request-details', params: { code: requestCode.value } });
+    } else {
+      submitError.value = 'Request was successful but no code was returned.';
+    }
+
   } catch (err) {
     const data = err.response?.data;
-    if (data) {
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
       const firstKey = Object.keys(data)[0];
       submitError.value = Array.isArray(data[firstKey]) ? data[firstKey][0] : data[firstKey];
+    } else if (typeof data === 'string') {
+      submitError.value = 'An error occurred on the server. Please try again later.';
     } else {
       submitError.value = 'Something went wrong. Please try again.';
     }

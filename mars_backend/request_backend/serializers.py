@@ -27,9 +27,9 @@ class FileRequestSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'middle_name', 'last_name', 'suffix',
             'sex', 'year_graduated', 'strand', 'birthdate',
             'lrn_number', 'email', 'phone_number', 'permanent_address',
-            'requested_files', 'submitted_at', 'status'
+            'requested_files', 'submitted_at', 'status', 'request_code'
         ]
-        read_only_fields = ['id', 'submitted_at', 'status']
+        read_only_fields = ['id', 'submitted_at', 'status', 'request_code']
 
     def validate_email(self, value):
         if not value.endswith(('.com', '.edu.ph', '.org', '.net')):

@@ -28,6 +28,11 @@ const router = createRouter({
       name: 'requestor-home',
       component: () => import('../views/requestor/requestor_home.vue'),
     },
+    {
+      path: '/requestor/request-details/:code',
+      name: 'request-details',
+      component: () => import('../views/requestor/request_details.vue'),
+    },
   ],
 })
 
