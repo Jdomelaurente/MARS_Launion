@@ -776,28 +776,15 @@ async function handleSubmit() {
 
   submitting.value = true;
   try {
-<<<<<<< HEAD
     const response = await requestService.submitRequest({
       ...form,
       requested_files: selectedFiles.value,
     });
-    requestCode.value = response.data?.request_code;
-    if (requestCode.value) {
-      router.push({ name: 'request-details', params: { code: requestCode.value } });
-    } else {
-      submitError.value = 'Request was successful but no code was returned.';
-    }
-
-=======
-    const res = await requestService.submitRequest({
-      ...form,
-      requested_files: selectedFiles.value,
-    });
-    submittedRequestId.value = res.data.passkey;
+    // Check which branch's logic we should use based on the ID response. Let's use passkey logic from doms since it's the newer flow.
+    submittedRequestId.value = response.data.passkey || response.data.request_code;
     showModal.value = false;
     showSuccess.value = true;
     resetForm();
->>>>>>> 463602d616b28b6a7a4a61945a9e3449f542f403
   } catch (err) {
     const data = err.response?.data;
     if (data && typeof data === 'object' && !Array.isArray(data)) {
