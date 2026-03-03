@@ -325,24 +325,24 @@ import { authService, adminService } from '@/services/api';
 import logoImg from '@/assets/logo-launion.png';
 
 // Tab Components
-import DashboardOverview from './tabs/DashboardOverview.vue';
-import RequestsList from './tabs/RequestsList.vue';
-import StudentDirectory from './tabs/StudentDirectory.vue';
-import StaffManagement from './tabs/StaffManagement.vue';
-import PickupScheduling from './tabs/PickupScheduling.vue';
-import AdminSettings from './tabs/AdminSettings.vue';
-import SystemAuditLogs from './tabs/SystemAuditLogs.vue';
-import StrandSettings from './tabs/StrandSettings.vue';
-import DocumentTypes from './tabs/DocumentTypes.vue';
+import DashboardOverview from '../admin/tabs/DashboardOverview.vue';
+import RequestsList from '../admin/tabs/RequestsList.vue';
+import StudentDirectory from '../admin/tabs/StudentDirectory.vue';
+import StaffManagement from '../admin/tabs/StaffManagement.vue';
+import PickupScheduling from '../admin/tabs/PickupScheduling.vue';
+import AdminSettings from '../admin/tabs/AdminSettings.vue';
+import SystemAuditLogs from '../admin/tabs/SystemAuditLogs.vue';
+import StrandSettings from '../admin/tabs/StrandSettings.vue';
+import DocumentTypes from '../admin/tabs/DocumentTypes.vue';
 
 // Modal Components
-import RequestDetailModal from './components/RequestDetailModal.vue';
-import StaffModal from './components/StaffModal.vue';
-import SlotModal from './components/SlotModal.vue';
-import DocumentModal from './components/DocumentModal.vue';
-import StrandModal from './components/StrandModal.vue';
-import StudentModal from './components/StudentModal.vue';
-import StudentProfileModal from './components/StudentProfileModal.vue';
+import RequestDetailModal from '../admin/components/RequestDetailModal.vue';
+import StaffModal from '../admin/components/StaffModal.vue';
+import SlotModal from '../admin/components/SlotModal.vue';
+import DocumentModal from '../admin/components/DocumentModal.vue';
+import StrandModal from '../admin/components/StrandModal.vue';
+import StudentModal from '../admin/components/StudentModal.vue';
+import StudentProfileModal from '../admin/components/StudentProfileModal.vue';
 
 // Lucide Icons
 import { 
