@@ -34,12 +34,12 @@ const router = createRouter({
     {
       path: '/admin/login',
       name: 'admin-login',
-      component: () => import('../views/Admin/AdminLogin.vue'),
+      component: () => import('../views/admin/AdminLogin.vue'),
     },
     {
       path: '/admin/dashboard/:tab?',
       name: 'admin-dashboard',
-      component: () => import('../views/Admin/AdminDashboard.vue'),
+      component: () => import('../views/admin/AdminDashboard.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     // Catch-all
