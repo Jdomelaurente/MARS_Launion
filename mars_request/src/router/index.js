@@ -40,7 +40,7 @@ const router = createRouter({
     // Catch-all
     {
       path: '/:pathMatch(.*)*',
-      redirect: '/Staff/login',
+      redirect: '/',
     },
   ],
 })
