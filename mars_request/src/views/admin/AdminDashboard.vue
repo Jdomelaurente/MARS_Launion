@@ -272,11 +272,11 @@
     />
 
     <DocumentModal 
-      :show="showDocModal"
-      :editingId="editingDoc"
+      :show="isDocumentModalVisible"
+      :editingId="documentIdBeingEdited"
       :form="docForm"
-      :submitting="submittingDoc"
-      @close="showDocModal = false"
+      :submitting="isDocumentSubmitting"
+      @close="isDocumentModalVisible = false"
       @submit="handleDocSubmit"
     />
 
@@ -466,9 +466,9 @@ const strandForm = reactive({ name: '', description: '' });
 const strands = ref([]);
 
 const docForm = reactive({ name: '', description: '', price: 0, is_active: true });
-const showDocModal = ref(false);
-const editingDoc = ref(null);
-const submittingDoc = ref(false);
+const isDocumentModalVisible = ref(false);
+const documentIdBeingEdited = ref(null);
+const isDocumentSubmitting = ref(false);
 
 // Student Modal State
 const showStudentModal = ref(false);
@@ -761,7 +761,7 @@ const loadDocTypes = async () => {
 };
 
 const openDocModal = (doc = null) => {
-  editingDoc.value = doc ? doc.id : null;
+  documentIdBeingEdited.value = doc ? doc.id : null;
   if (doc) {
     docForm.name = doc.name;
     docForm.description = doc.description;
@@ -770,22 +770,22 @@ const openDocModal = (doc = null) => {
   } else {
     docForm.name = ''; docForm.description = ''; docForm.price = 0; docForm.is_active = true;
   }
-  showDocModal.value = true;
+  isDocumentModalVisible.value = true;
 };
 
 const handleDocSubmit = async () => {
-  submittingDoc.value = true;
+  isDocumentSubmitting.value = true;
   try {
-    if (editingDoc.value) {
-      await adminService.updateDocType(editingDoc.value, docForm);
+    if (documentIdBeingEdited.value) {
+      await adminService.updateDocType(documentIdBeingEdited.value, docForm);
     } else {
       await adminService.createDocType(docForm);
     }
-    showDocModal.value = false;
+    isDocumentModalVisible.value = false;
     await loadDocTypes();
     loadAuditLogs();
   } catch (err) { alert('Error saving document type.'); }
-  finally { submittingDoc.value = false; }
+  finally { isDocumentSubmitting.value = false; }
 };
 
 const deleteDoc = async (id) => {
