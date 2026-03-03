@@ -24,6 +24,20 @@ apiClient.interceptors.request.use(
     }
 );
 
+// Add a response interceptor to handle 401 errors (Unauthorized/Expired Token)
+apiClient.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            const isAdmin = localStorage.getItem('is_admin') === 'true';
+            authService.logout();
+            // Redirect to the appropriate login page
+            window.location.href = isAdmin ? '/admin/login' : '/Staff/login';
+        }
+        return Promise.reject(error);
+    }
+);
+
 export const authService = {
     login(username, password) {
         return apiClient.post('login/', { username, password });
