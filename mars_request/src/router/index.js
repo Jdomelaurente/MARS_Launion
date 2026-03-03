@@ -10,6 +10,11 @@ const router = createRouter({
     },
     // ── Staff routes ──────────────────────────────────────
     {
+      path: '/Staff/home',
+      name: 'staff-home',
+      component: () => import('../views/Staff/Staff_Home.vue'),
+    },
+    {
       path: '/Staff/login',
       name: 'login',
       component: () => import('../views/auth/login.vue'),
@@ -29,12 +34,12 @@ const router = createRouter({
     {
       path: '/admin/login',
       name: 'admin-login',
-      component: () => import('../views/admin/AdminLogin.vue'),
+      component: () => import('../views/Admin/AdminLogin.vue'),
     },
     {
       path: '/admin/dashboard/:tab?',
       name: 'admin-dashboard',
-      component: () => import('../views/admin/AdminDashboard.vue'),
+      component: () => import('../views/Admin/AdminDashboard.vue'),
       meta: { requiresAuth: true, requiresAdmin: true },
     },
     // Catch-all

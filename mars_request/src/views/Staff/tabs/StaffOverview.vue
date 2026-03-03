@@ -7,15 +7,28 @@
 
     <!-- Stat Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-      <div v-for="card in statCards" :key="card.label" 
-           class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-4 hover:shadow-md transition-shadow">
-        <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white" :style="{ backgroundColor: card.color }">
-          <component :is="card.icon" class="w-6 h-6" />
-        </div>
-        <div class="flex flex-col">
-          <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">{{ card.label }}</span>
-          <span class="text-3xl font-black text-[#00334d]">{{ card.value }}</span>
-        </div>
+      <div v-for="(card, i) in statCards" :key="card.label || i" 
+           class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-4 hover:shadow-md transition-shadow relative overflow-hidden">
+        
+        <!-- Skeleton for Card -->
+        <template v-if="loading">
+          <div class="w-10 h-10 rounded-lg bg-slate-200 animate-pulse"></div>
+          <div class="flex flex-col gap-2 mt-1">
+            <div class="h-3 w-16 bg-slate-200 rounded animate-pulse"></div>
+            <div class="h-8 w-12 bg-slate-200 rounded animate-pulse"></div>
+          </div>
+        </template>
+        
+        <!-- Actual Card -->
+        <template v-else>
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center text-white" :style="{ backgroundColor: card.color }">
+            <component :is="card.icon" class="w-6 h-6" />
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">{{ card.label }}</span>
+            <span class="text-3xl font-black text-[#00334d]">{{ card.value }}</span>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -27,7 +40,17 @@
           <h3 class="font-bold text-[#00334d] text-sm uppercase tracking-wide">Requests by Strand</h3>
         </div>
         <div class="p-6">
-          <div v-if="loading" class="text-center py-8 text-slate-400">Loading...</div>
+          <div v-if="loading" class="space-y-5">
+            <div v-for="i in 4" :key="i" class="flex flex-col gap-2">
+              <div class="flex justify-between">
+                <div class="h-3 w-24 bg-slate-200 rounded animate-pulse"></div>
+                <div class="h-3 w-6 bg-slate-200 rounded animate-pulse"></div>
+              </div>
+              <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div class="h-full bg-slate-200 animate-pulse w-full"></div>
+              </div>
+            </div>
+          </div>
           <div v-else class="space-y-4">
             <div v-for="row in stats.strand_breakdown" :key="row.strand_name" class="flex flex-col gap-1.5">
               <div class="flex justify-between text-xs font-bold">
@@ -47,28 +70,43 @@
         <div class="px-6 py-4 bg-slate-50 border-b">
           <h3 class="font-bold text-[#00334d] text-sm uppercase tracking-wide">Recent Submissions</h3>
         </div>
-        <div class="divide-y relative min-h-[200px]">
-          <div v-if="loading" class="absolute inset-0 flex items-center justify-center text-slate-400 italic text-sm">Loading...</div>
-          <div v-else-if="stats.recent_requests?.length === 0" class="absolute inset-0 flex items-center justify-center text-slate-400 italic text-sm">No recent requests</div>
-          <div v-for="req in stats.recent_requests" :key="req.id" 
-               @click="$emit('open-request', req)"
-               class="px-6 py-4 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors group">
-            <div class="flex items-center gap-4">
-              <div class="w-10 h-10 rounded bg-[#00334d] text-white flex items-center justify-center font-bold text-xs uppercase">
-                {{ initials(req.first_name, req.last_name) }}
-              </div>
-              <div class="flex flex-col">
-                <div class="flex items-center gap-2">
-                  <span class="font-bold text-sm text-[#00334d] group-hover:text-cyan-600">{{ req.first_name }} {{ req.last_name }}</span>
-                  <AttachmentIcon v-if="req.documents?.length > 0" class="w-3.5 h-3.5 text-amber-500" />
+        <div class="divide-y relative min-h-[200px] flex flex-col">
+          <template v-if="loading">
+            <div v-for="i in 4" :key="i" class="px-6 py-4 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded bg-slate-200 animate-pulse"></div>
+                <div class="flex flex-col gap-2">
+                  <div class="h-3 w-32 bg-slate-200 rounded animate-pulse"></div>
+                  <div class="h-2 w-20 bg-slate-200 rounded animate-pulse"></div>
                 </div>
-                <span class="text-[0.7rem] text-slate-500 font-medium">{{ formatDate(req.submitted_at) }}</span>
               </div>
+              <div class="h-6 w-16 bg-slate-200 rounded-full animate-pulse"></div>
             </div>
-            <span class="px-3 py-1 rounded-full text-[0.6rem] font-black uppercase" :class="statusClass(req.status)">
-              {{ req.status }}
-            </span>
-          </div>
+          </template>
+          
+          <div v-else-if="stats.recent_requests?.length === 0" class="absolute inset-0 flex items-center justify-center text-slate-400 italic text-sm">No recent requests</div>
+          
+          <template v-else>
+            <div v-for="req in stats.recent_requests" :key="req.id" 
+                 @click="$emit('open-request', req)"
+                 class="px-6 py-4 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors group">
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded bg-[#00334d] text-white flex items-center justify-center font-bold text-xs uppercase">
+                  {{ initials(req.first_name, req.last_name) }}
+                </div>
+                <div class="flex flex-col">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-sm text-[#00334d] group-hover:text-cyan-600">{{ req.first_name }} {{ req.last_name }}</span>
+                    <AttachmentIcon v-if="req.documents?.length > 0" class="w-3.5 h-3.5 text-amber-500" />
+                  </div>
+                  <span class="text-[0.7rem] text-slate-500 font-medium">{{ formatDate(req.submitted_at) }}</span>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full text-[0.6rem] font-black uppercase" :class="statusClass(req.status)">
+                {{ req.status }}
+              </span>
+            </div>
+          </template>
         </div>
       </div>
     </div>

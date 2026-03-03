@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='filerequest',
             name='pass_key',
-            field=models.CharField(blank=True, max_length=20, unique=True),
+            field=models.CharField(blank=True, max_length=20),
         ),
         migrations.AddField(
             model_name='filerequest',

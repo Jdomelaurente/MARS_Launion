@@ -50,49 +50,14 @@
           <div class="flex flex-col gap-4 mb-10">
             <h3 class="text-[0.7rem] font-black text-slate-400 uppercase tracking-widest border-b pb-1">Requested Documents</h3>
             <div class="flex flex-col gap-3">
-              <div v-for="f in request.requested_files" :key="f" class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <div class="flex items-center justify-between mb-3 border-b border-dashed pb-2 border-slate-200">
-                  <span class="text-[#00334d] font-black text-sm">{{ f }}</span>
-                  <div class="flex gap-2">
-                     <span v-if="request.student_record?.documents?.find(d => d.document_type === f)" class="text-[0.6rem] font-black uppercase px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full border border-blue-200">In Record</span>
-                     <span v-else class="text-[0.6rem] font-black uppercase px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full border border-orange-200 animate-pulse">Missing Master</span>
-                     <span v-if="request.processed_documents?.find(d => d.document_type === f)" class="text-[0.6rem] font-black uppercase px-2 py-0.5 bg-green-100 text-green-600 rounded-full border border-green-200">✓ Ready</span>
-                     <span v-else class="text-[0.6rem] font-black uppercase px-2 py-0.5 bg-amber-100 text-amber-600 rounded-full border border-amber-200">Pending</span>
-                  </div>
-                </div>
-
-                <div v-if="!request.student_record?.documents?.find(d => d.document_type === f)" class="mb-3 p-2 bg-orange-50 border border-orange-100 rounded text-[0.6rem] text-orange-700 flex items-center gap-2">
-                  <AlertIcon class="w-3.5 h-3.5" />
-                  <span>Document is not in digital database. Manual search required.</span>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p class="text-[0.6rem] font-bold text-slate-400 uppercase mb-1">Student Scan:</p>
-                    <div v-if="request.documents?.find(d => d.document_type === f)">
-                      <a :href="'http://127.0.0.1:8000' + request.documents.find(d => d.document_type === f).file" target="_blank" class="flex items-center gap-1 text-[0.6rem] font-bold text-amber-600 bg-white px-2 py-1 rounded border border-amber-200 shadow-sm">
-                        <AttachmentIcon class="w-3 h-3" /> View Scan
-                      </a>
-                    </div>
-                    <span v-else class="text-[0.55rem] font-bold text-slate-400 italic">No scan</span>
-                  </div>
-                  <div>
-                    <p class="text-[0.6rem] font-bold text-slate-400 uppercase mb-1">Staff Ready Doc:</p>
-                    <div v-if="request.processed_documents?.find(d => d.document_type === f)" class="flex items-center gap-2">
-                      <a :href="'http://127.0.0.1:8000' + request.processed_documents.find(d => d.document_type === f).file" target="_blank" class="flex items-center gap-1.5 text-[0.6rem] font-bold text-green-600 bg-white px-2 py-1 rounded border border-green-200 shadow-sm">
-                        <FileIcon class="w-3 h-3" /> Download
-                      </a>
-                      <button @click="deleteDoc(request.processed_documents.find(d => d.document_type === f).id)" class="text-[0.6rem] font-bold text-red-500 px-2 py-1 rounded border border-red-200">X</button>
-                    </div>
-                    <div v-else class="mt-1">
-                      <label class="cursor-pointer px-3 py-1.5 bg-[#00334d] text-white text-[0.6rem] font-black uppercase rounded hover:bg-[#004d66]">
-                        <input type="file" class="hidden" @change="handleUpload($event, f)" />
-                        ⬆ Upload
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <!-- Extracted Document row component -->
+              <DocumentUploadRow 
+                v-for="f in request.requested_files" 
+                :key="f" 
+                :filename="f" 
+                :request="request" 
+                @refresh="refreshRequestData" 
+              />
             </div>
           </div>
 
@@ -127,10 +92,21 @@
 
 <script setup>
 import { adminService } from '@/services/api';
-import { X as XIcon, Clock as ClockIcon, FileText as FileIcon, Paperclip as AttachmentIcon, AlertCircle as AlertIcon } from 'lucide-vue-next';
+import { X as XIcon, Clock as ClockIcon } from 'lucide-vue-next';
+import DocumentUploadRow from './DocumentUploadRow.vue';
 
 const props = defineProps(['request']);
 const emit = defineEmits(['close', 'refresh']);
+
+const refreshRequestData = async () => {
+  try {
+    const res = await adminService.getRequest(props.request.id);
+    Object.assign(props.request, res.data);
+    emit('refresh');
+  } catch (err) {
+    console.error('Failed to manually refresh request data', err);
+  }
+};
 
 const updateStatus = async (status) => {
   if (status === 'Completed' && !confirm('Mark as COMPLETED?')) return;
@@ -139,31 +115,6 @@ const updateStatus = async (status) => {
     props.request.status = res.data.status;
     emit('refresh');
   } catch (err) { alert('Update failed'); }
-};
-
-const handleUpload = async (event, docType) => {
-  const file = event.target.files[0];
-  if (!file) return;
-  try {
-    const fd = new FormData();
-    fd.append('document_type', docType);
-    fd.append('file', file);
-    await adminService.uploadProcessedDocument(props.request.id, fd);
-    // Refresh local data
-    const res = await adminService.getRequest(props.request.id);
-    Object.assign(props.request, res.data);
-    emit('refresh');
-  } catch (err) { alert('Upload failed'); }
-};
-
-const deleteDoc = async (id) => {
-  if (!confirm('Remove document?')) return;
-  try {
-    await adminService.deleteProcessedDocument(id);
-    const res = await adminService.getRequest(props.request.id);
-    Object.assign(props.request, res.data);
-    emit('refresh');
-  } catch (err) { alert('Delete failed'); }
 };
 
 const toggleAccountability = async () => {

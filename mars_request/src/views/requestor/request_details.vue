@@ -167,7 +167,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import logoImg from '@/assets/logo-launion.png';
+import logoImg from '@/assets/form_logo.png';
 import launionImg from '@/assets/launion.png';
 import { requestService } from '@/services/api';
 
