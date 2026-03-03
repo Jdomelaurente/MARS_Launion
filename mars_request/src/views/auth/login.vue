@@ -103,8 +103,10 @@ const handleLogin = async () => {
   loading.value = true;
   try {
     const response = await authService.login(username.value, password.value);
+    const userData = response.data.user;
     localStorage.setItem('token', response.data.access);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
+    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('is_admin', userData.is_admin ? 'true' : 'false');
     router.push('/Staff/dashboard');
   } catch (err) {
     error.value = err.response?.data?.detail || 'Invalid username or password';

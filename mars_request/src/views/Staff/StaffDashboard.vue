@@ -30,7 +30,7 @@
             <img :src="logoImg" alt="Logo" class="w-8 h-8 object-contain brightness-0 invert shrink-0" />
             <div class="flex flex-col leading-tight">
               <span class="text-xs font-black uppercase tracking-wider whitespace-nowrap">La Union SHS</span>
-              <span class="text-[0.55rem] opacity-60 uppercase tracking-widest">Admin Panel</span>
+              <span class="text-[0.55rem] opacity-60 uppercase tracking-widest">Staff Portal</span>
             </div>
           </div>
         </Transition>
@@ -382,7 +382,7 @@ const navigateTo = (id) => {
 
 const currentView = computed({
   get: () => route.params.tab || 'overview',
-  set: (val) => router.push(`/admin/dashboard/${val}`)
+  set: (val) => router.push(`/Staff/dashboard/${val}`)
 });
 
 const stats = ref({
@@ -829,7 +829,7 @@ const strandPercent = (count) => {
   return Math.round((count / total) * 100);
 };
 
-const handleLogout = () => { authService.logout(); router.push('/admin/login'); };
+const handleLogout = () => { authService.logout(); router.push('/Staff/login'); };
 
 // ── Students Handlers ──────────────────────────────────────────────────────────
 const loadStudents = async () => {
@@ -987,11 +987,11 @@ watch(() => route.params.tab, (v) => {
 
 onMounted(async () => {
   const userData = localStorage.getItem('user');
-  if (!userData) { router.push('/admin/login'); return; }
+  if (!userData) { router.push('/Staff/login'); return; }
   user.value = JSON.parse(userData);
 
   if (!route.params.tab) {
-    router.replace('/admin/dashboard/overview');
+    router.replace('/Staff/dashboard/overview');
   }
 
   await loadStats();
