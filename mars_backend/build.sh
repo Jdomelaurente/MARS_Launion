@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 # build.sh — Render build script for mars_backend (Django)
-# Render runs this script every time you deploy.
 
-set -o errexit  # Exit immediately if any command fails
+set -o errexit
 
-# 1. Install Python dependencies
+echo "=== Step 1: Install Python dependencies ==="
 pip install -r requirements.txt
 
-# 2. Collect static files (whitenoise serves them)
+echo "=== Step 2: Collect static files ==="
 python manage.py collectstatic --no-input
 
-# 3. Apply any pending database migrations
+echo "=== Step 3: Apply database migrations ==="
 python manage.py migrate
 
-# 4. Create default admin account (safe to run every deploy — uses get_or_create)
+echo "=== Step 4: Create default admin account ==="
 python create_admin.py
+
+echo "=== Build complete ==="
