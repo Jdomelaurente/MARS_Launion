@@ -37,6 +37,8 @@ if RENDER_EXTERNAL_HOSTNAME:
 # Fallback wildcard for any .onrender.com subdomain
 ALLOWED_HOSTS += ['.onrender.com', '.vercel.app']
 
+# Render uses a proxy — let Django know HTTPS is on
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
