@@ -12,3 +12,6 @@ python manage.py collectstatic --no-input
 
 # 3. Apply any pending database migrations
 python manage.py migrate
+
+# 4. Create default admin account (safe to run every deploy — uses get_or_create)
+python create_admin.py

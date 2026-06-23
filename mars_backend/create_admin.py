@@ -8,7 +8,7 @@ from request_backend.models import Staff
 
 def create_admin():
     username = 'admin'
-    password = 'admin_password123'
+    password = 'admin'
     email = 'admin@example.com'
     staff_id = 'ADM-001'
     full_name = 'Master Admin'
