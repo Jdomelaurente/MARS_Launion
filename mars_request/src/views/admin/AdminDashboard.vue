@@ -1,150 +1,130 @@
 <template>
-  <div class="flex h-screen bg-[#f5f7fa] font-sans overflow-hidden">
+  <!-- Outer: full-height column — header on top, body row below -->
+  <div class="flex flex-col h-screen bg-[#f5f7fa] font-sans overflow-hidden">
 
-    <!-- Mobile Overlay Backdrop -->
-    <Transition name="fade">
-      <div 
-        v-if="sidebarOpen && isMobile"
-        class="fixed inset-0 bg-black/50 z-30"
-        @click="sidebarOpen = false"
-      />
-    </Transition>
-
-    <!-- Sidebar -->
-    <aside 
-      :class="[
-        'bg-[#103059] text-white flex flex-col transition-all duration-300 ease-in-out z-40 shadow-xl shrink-0',
-        // Mobile: fixed drawer that slides in/out
-        isMobile ? (
-          sidebarOpen ? 'fixed inset-y-0 left-0 w-72 translate-x-0' : 'fixed inset-y-0 left-0 w-72 -translate-x-full'
-        ) : (
-        // Desktop: static, collapses to icon rail
-          sidebarOpen ? 'w-64' : 'w-16'
-        )
-      ]"
-    >
-      <!-- Sidebar Top Brand + Close btn on mobile -->
-      <div class="flex items-center justify-between px-4 py-5 border-b border-white/10 shrink-0">
-        <Transition name="fade">
-          <div v-if="sidebarOpen" class="flex items-center gap-3 overflow-hidden">
-            <img :src="logoImg" alt="Logo" class="w-8 h-8 object-contain brightness-0 invert shrink-0" />
-            <div class="flex flex-col leading-tight">
-              <span class="text-xs font-black uppercase tracking-wider whitespace-nowrap">La Union SHS</span>
-              <span class="text-[0.55rem] opacity-60 uppercase tracking-widest">Admin Panel</span>
-            </div>
-          </div>
-        </Transition>
-        <!-- Desktop collapse / Mobile close button -->
+    <!-- ===== TOP HEADER (spans full width) ===== -->
+    <header class="h-16 bg-[#103059] text-white flex items-center justify-between px-4 md:px-8 shadow-md z-50 shrink-0">
+      <div class="flex items-center gap-3 mr-auto">
+        <!-- Burger toggle -->
         <button
-          @click="sidebarOpen = false"
-          class="p-2 rounded hover:bg-white/10 transition-colors shrink-0"
-          :class="!sidebarOpen && !isMobile ? 'mx-auto' : ''"
-          title="Close sidebar"
+          @click="sidebarOpen = !sidebarOpen"
+          class="p-2 hover:bg-white/10 rounded transition-colors focus:outline-none"
+          title="Toggle Sidebar"
         >
-          <XIcon class="w-5 h-5" />
+          <MenuIcon class="w-6 h-6" />
         </button>
+
+        <div class="hidden sm:flex flex-col">
+          <h2 class="text-xs md:text-sm font-bold leading-tight uppercase tracking-wide">La Union SHS — Admin</h2>
+          <p class="text-[0.55rem] opacity-60 tracking-widest uppercase">M.A.R.S Dashboard</p>
+        </div>
       </div>
 
-      <!-- Sidebar Nav -->
-      <nav class="flex-grow pt-4 overflow-y-auto overflow-x-hidden">
-        <ul class="flex flex-col">
-          <li 
-            v-for="item in navItems" 
-            :key="item.id"
-            @click="navigateTo(item.id)"
-            :class="[
-              'group flex items-center px-4 py-3.5 cursor-pointer transition-colors border-b border-white/5 relative',
-              currentView === item.id ? 'bg-[#ffca28] text-[#103059]' : 'hover:bg-white/10'
-            ]"
-            :title="!sidebarOpen ? item.label : ''"
-          >
-            <div class="flex items-center min-w-[24px] justify-center shrink-0" :class="!sidebarOpen && !isMobile ? 'mx-auto' : ''">
-              <component :is="item.icon" class="w-5 h-5 shrink-0" />
-            </div>
-            <span 
+      <div class="flex items-center gap-4 md:gap-8">
+        <div class="hidden md:flex flex-col text-right">
+          <span class="text-xs italic opacity-90">Welcome, {{ user?.full_name || 'Admin' }}</span>
+          <span class="text-[0.7rem] font-bold text-amber-300 uppercase leading-none mt-1">Administrator</span>
+        </div>
+        <div class="relative cursor-pointer hover:opacity-80 transition-opacity">
+          <BellIcon class="w-6 h-6" />
+          <span v-if="stats.pending > 0" class="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#103059]">
+            {{ stats.pending }}
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== BODY ROW (sidebar + content, BELOW header) ===== -->
+    <div class="flex flex-1 overflow-hidden">
+
+      <!-- Mobile Overlay Backdrop -->
+      <Transition name="fade">
+        <div
+          v-if="sidebarOpen && isMobile"
+          class="fixed inset-0 bg-black/50 z-30 top-16"
+          @click="sidebarOpen = false"
+        />
+      </Transition>
+
+      <!-- Sidebar -->
+      <aside
+        :class="[
+          'bg-[#0d2744] text-white flex flex-col transition-all duration-300 ease-in-out shadow-xl shrink-0',
+          isMobile ? (
+            sidebarOpen ? 'fixed top-16 left-0 bottom-0 w-72 translate-x-0 z-40' : 'fixed top-16 left-0 bottom-0 w-72 -translate-x-full z-40'
+          ) : (
+            sidebarOpen ? 'w-64' : 'w-16'
+          )
+        ]"
+      >
+        <!-- Sidebar Nav -->
+        <nav class="flex-grow pt-4 overflow-y-auto overflow-x-hidden">
+          <ul class="flex flex-col">
+            <li
+              v-for="item in navItems"
+              :key="item.id"
+              @click="navigateTo(item.id)"
               :class="[
-                'ml-4 font-semibold text-sm whitespace-nowrap transition-all duration-200 overflow-hidden',
-                sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0 ml-0'
+                'group flex items-center px-4 py-3.5 cursor-pointer transition-colors border-b border-white/5 relative',
+                currentView === item.id ? 'bg-[#ffca28] text-[#0d2744]' : 'hover:bg-white/10'
+              ]"
+              :title="!sidebarOpen ? item.label : ''"
+            >
+              <div
+                class="flex items-center min-w-[24px] justify-center shrink-0"
+                :class="!sidebarOpen && !isMobile ? 'mx-auto' : ''"
+              >
+                <component :is="item.icon" class="w-5 h-5 shrink-0" />
+              </div>
+              <span
+                :class="[
+                  'ml-4 font-semibold text-sm whitespace-nowrap transition-all duration-200 overflow-hidden',
+                  sidebarOpen ? 'opacity-100 max-w-xs' : 'opacity-0 max-w-0 ml-0'
+                ]"
+              >
+                {{ item.label }}
+              </span>
+              <!-- Pending badge -->
+              <span
+                v-if="sidebarOpen && item.id === 'record_requests' && stats.pending > 0"
+                class="ml-auto bg-red-500 text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full shrink-0"
+              >
+                {{ stats.pending }}
+              </span>
+              <!-- Active bar for collapsed desktop -->
+              <div v-if="!sidebarOpen && !isMobile && currentView === item.id" class="absolute left-0 top-0 w-1 h-full bg-[#ffca28] rounded-r"></div>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Sidebar Footer / Logout -->
+        <div class="p-4 border-t border-white/10 shrink-0">
+          <button
+            @click="handleLogout"
+            :class="[
+              'w-full flex items-center p-2.5 rounded border border-white/30 text-white hover:bg-red-600 hover:border-red-600 transition-all duration-200',
+              sidebarOpen ? 'justify-start' : 'justify-center'
+            ]"
+            :title="!sidebarOpen ? 'Logout' : ''"
+          >
+            <LogOutIcon class="w-5 h-5 shrink-0" />
+            <span
+              :class="[
+                'font-semibold text-sm whitespace-nowrap transition-all duration-200 overflow-hidden',
+                sidebarOpen ? 'ml-3 opacity-100 max-w-xs' : 'opacity-0 max-w-0'
               ]"
             >
-              {{ item.label }}
+              Logout
             </span>
-            <!-- Pending Badge -->
-            <span 
-              v-if="sidebarOpen && item.id === 'record_requests' && stats.pending > 0" 
-              class="ml-auto bg-red-500 text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-            >
-              {{ stats.pending }}
-            </span>
-            <!-- Active Bar for collapsed desktop -->
-            <div v-if="!sidebarOpen && !isMobile && currentView === item.id" class="absolute left-0 top-0 w-1 h-full bg-[#ffca28] rounded-r"></div>
-          </li>
-        </ul>
-      </nav>
-
-      <!-- Sidebar Footer / Logout -->
-      <div class="p-4 border-t border-white/10 shrink-0">
-        <button 
-          @click="handleLogout" 
-          :class="[
-            'w-full flex items-center p-2.5 rounded border border-white/30 text-white hover:bg-red-600 hover:border-red-600 transition-all duration-200',
-            sidebarOpen ? 'justify-start' : 'justify-center'
-          ]"
-          :title="!sidebarOpen ? 'Logout' : ''"
-        >
-          <LogOutIcon class="w-5 h-5 shrink-0" />
-          <span 
-            :class="[
-              'font-semibold text-sm whitespace-nowrap transition-all duration-200 overflow-hidden',
-              sidebarOpen ? 'ml-3 opacity-100 max-w-xs' : 'opacity-0 max-w-0'
-            ]"
-          >
-            Logout
-          </span>
-        </button>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-      <!-- Top Header -->
-      <header class="h-16 bg-[#103059] text-white flex items-center justify-between px-4 md:px-8 shadow-md z-10 shrink-0">
-        <div class="flex items-center gap-3">
-          <!-- Burger toggle -->
-          <button 
-            @click="sidebarOpen = !sidebarOpen" 
-            class="p-2 hover:bg-white/10 rounded transition-colors focus:outline-none"
-            title="Toggle Sidebar"
-          >
-            <MenuIcon class="w-6 h-6" />
           </button>
-          
-          <div class="hidden sm:flex flex-col">
-            <h2 class="text-xs md:text-sm font-bold leading-tight uppercase tracking-wide">La Union SHS — Admin</h2>
-            <p class="text-[0.55rem] opacity-60 tracking-widest uppercase">M.A.R.S Dashboard</p>
-          </div>
         </div>
+      </aside>
 
-        <div class="flex items-center gap-4 md:gap-8">
-          <div class="hidden md:flex flex-col text-right">
-            <span class="text-xs font-medium opacity-90 italic">Welcome, {{ user?.full_name || 'Admin' }}</span>
-            <span class="text-[0.7rem] font-bold uppercase tracking-wider text-amber-300 mt-0.5">Administrator</span>
-          </div>
-          
-          <div class="relative cursor-pointer hover:opacity-80 transition-opacity">
-            <BellIcon class="w-6 h-6" />
-            <span v-if="stats.pending > 0" class="absolute -top-1.5 -right-1.5 bg-[#ff4d4d] text-white text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full border-2 border-[#103059]">
-              {{ stats.pending }}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      <!-- Page Content Area -->
-      <main class="flex-1 overflow-y-auto p-8 lg:p-12">
+      <!-- Main Content Area -->
+      <main class="flex-1 overflow-y-auto p-6 md:p-8 lg:p-12">
         <div class="max-w-7xl mx-auto">
-          
-          <DashboardOverview 
+
+          <DashboardOverview
             v-if="currentView === 'overview'"
             :stats="stats"
             :statCards="statCards"
@@ -158,7 +138,7 @@
             @open-modal="openModal"
           />
 
-          <RequestsList 
+          <RequestsList
             v-if="currentView === 'record_requests'"
             :requests="requests"
             :loadingRequests="loadingRequests"
@@ -177,7 +157,7 @@
             @bulk-action="handleBulkAction"
           />
 
-          <StudentDirectory 
+          <StudentDirectory
             v-if="currentView === 'student_directory'"
             :students="filteredStudents"
             :loadingStudents="loadingStudents"
@@ -192,7 +172,7 @@
             @delete-student="deleteStudent"
           />
 
-          <StaffTable 
+          <StaffTable
             v-if="currentView === 'staff_management'"
             :staffList="staffOnlyUsers"
             :formatDateTime="formatDateTime"
@@ -202,7 +182,7 @@
             @toggle-status="toggleStaffStatus"
           />
 
-          <AdminTable 
+          <AdminTable
             v-if="currentView === 'admin_management'"
             :adminList="adminUsers"
             :formatDateTime="formatDateTime"
@@ -212,20 +192,18 @@
             @toggle-status="toggleStaffStatus"
           />
 
-
-
-          <AdminSettings 
+          <AdminSettings
             v-if="currentView === 'admin_settings'"
             :user="user"
           />
 
-          <SystemAuditLogs 
+          <SystemAuditLogs
             v-if="currentView === 'audit_logs'"
             :auditLogs="auditLogs"
             :formatDateTime="formatDateTime"
           />
 
-          <StrandSettings 
+          <StrandSettings
             v-if="currentView === 'strand_settings'"
             :strands="strands"
             @open-strand-modal="openStrandModal()"
@@ -233,7 +211,7 @@
             @delete-strand="deleteStrand"
           />
 
-          <DocumentTypes 
+          <DocumentTypes
             v-if="currentView === 'document_types'"
             :docTypes="docTypes"
             @open-doc-modal="openDocModal()"
@@ -246,7 +224,7 @@
     </div>
 
     <!-- Modals -->
-    <RequestDetailModal 
+    <RequestDetailModal
       :show="showModal"
       :request="selectedRequest"
       :formatDate="formatDate"
@@ -254,7 +232,7 @@
       @close="closeModal"
     />
 
-    <StaffModal 
+    <StaffModal
       :show="showStaffModal"
       :editingId="editingStaff"
       :form="staffForm"
@@ -263,9 +241,7 @@
       @submit="handleStaffSubmit"
     />
 
-
-
-    <DocumentModal 
+    <DocumentModal
       :show="showDocModal"
       :editingId="editingDoc"
       :form="docForm"
@@ -274,7 +250,7 @@
       @submit="handleDocSubmit"
     />
 
-    <StrandModal 
+    <StrandModal
       :show="showStrandModal"
       :editingId="editingStrand"
       :form="strandForm"
@@ -283,7 +259,7 @@
       @submit="handleStrandSubmit"
     />
 
-    <StudentModal 
+    <StudentModal
       :show="showStudentModal"
       :editingId="editingStudent?.id"
       :form="studentForm"
@@ -293,7 +269,7 @@
       @submit="handleStudentSubmit"
     />
 
-    <StudentProfileModal 
+    <StudentProfileModal
       :show="showStudentProfileModal"
       :student="liveSelectedStudent"
       :form="masterDocForm"
@@ -340,7 +316,7 @@ import StudentProfileModal from './components/StudentProfileModal.vue';
 
 // Lucide Icons
 import { 
-  Menu as MenuIcon, X as XIcon, LayoutDashboard as DashboardIcon, 
+  Menu as MenuIcon, LayoutDashboard as DashboardIcon, 
   List as ListIcon, Users as UsersIcon, User as UserIcon, 
   LogOut as LogOutIcon, Bell as BellIcon, Search as SearchIcon,
   FileText as FileIcon, Clock as ClockIcon, CheckCircle as CheckIcon,
